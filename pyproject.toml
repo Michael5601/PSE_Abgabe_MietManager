@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mietmanager"
+version = "0.1.0"
+description = "Desktop-Anwendung zur Verwaltung von Mietobjekten, Mietverträgen und Nebenkostenabrechnungen für private Kleinvermieter."
+readme = "README.md"
+requires-python = ">=3.14"
+license = { text = "MIT" }
+authors = [{ name = "Michael Bangas" }]
+dependencies = [
+    "PyQt6>=6.7",
+    "SQLAlchemy>=2.0",
+    "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pyinstaller>=6.0",
+]
+
+[project.gui-scripts]
+mietmanager = "mietmanager.main:main"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mietmanager = ["ui/resources/*.qss"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
