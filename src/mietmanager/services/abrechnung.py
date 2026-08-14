@@ -1,4 +1,4 @@
-"""Berechnung der Nebenkostenabrechnung (Kernprozess der Anwendung).
+"""Berechnung der Nebenkostenabrechnung.
 
 Vereinfachung/Technical Debt: Vorauszahlungen werden über die volle Anzahl an Monaten
 des Abrechnungszeitraums berücksichtigt, unabhängig davon, ob ein Mietvertrag erst
@@ -97,14 +97,10 @@ def erstelle_abrechnung(
     return abrechnung
 
 
-def positionsdetails(
+def get_positionsdetails(
     abrechnung: Nebenkostenabrechnung, mietvertrag: Mietvertrag
 ) -> list[tuple[str, float]]:
-    """Rekonstruiert die Kostenanteile je Kostenart für einen Mietvertrag (für die PDF-Ausgabe).
-
-    Wird nicht in der Datenbank gespeichert, sondern aus den Kostenpositionen neu berechnet,
-    um keine redundante Line-Item-Tabelle pflegen zu müssen.
-    """
+    """Rekonstruiert die Kostenanteile je Kostenart für einen Mietvertrag (für die PDF-Ausgabe)."""
     kostenpositionen = _kostenpositionen_im_zeitraum(
         abrechnung.immobilie, abrechnung.zeitraum_start, abrechnung.zeitraum_ende
     )

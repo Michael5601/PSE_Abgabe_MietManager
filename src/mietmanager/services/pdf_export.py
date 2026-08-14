@@ -1,4 +1,4 @@
-"""PDF-Export der Nebenkostenabrechnung als versandfertiger Geschäftsbrief (eine Datei je Mieter)."""
+"""PDF-Export der Nebenkostenabrechnung als versandfertiger Geschäftsbrief."""
 
 import re
 from datetime import date
@@ -12,18 +12,18 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from mietmanager.models import Abrechnungsposition, Anrede, Mieter, Nebenkostenabrechnung, Vermieterprofil
-from mietmanager.services.abrechnung import positionsdetails
+from mietmanager.services.abrechnung import get_positionsdetails
 from mietmanager.services.regeln import pruefe_profil_vollstaendig
 
 
-def _dateiname(position: Abrechnungsposition) -> str:
+def _get_dateiname(position: Abrechnungsposition) -> str:
     mieter = position.mietvertrag.mieter
     jahr = position.abrechnung.zeitraum_start.year
     name = f"Nebenkostenabrechnung_{jahr}_{mieter.nachname}_{mieter.vorname}.pdf"
     return re.sub(r"[^\w\-.]", "_", name)
 
 
-def _anredetext(mieter: Mieter) -> str:
+def _get_anredetext(mieter: Mieter) -> str:
     if mieter.anrede == Anrede.HERR:
         return f"Sehr geehrter Herr {mieter.nachname},"
     if mieter.anrede == Anrede.FRAU:
@@ -50,7 +50,7 @@ def exportiere_abrechnung(
         vertrag = position.mietvertrag
         mieter = vertrag.mieter
         immobilie = abrechnung.immobilie
-        pfad = zielordner / _dateiname(position)
+        pfad = zielordner / _get_dateiname(position)
 
         doc = SimpleDocTemplate(
             str(pfad),
@@ -77,7 +77,7 @@ def exportiere_abrechnung(
                 betreff_style,
             ),
             Spacer(1, 0.5 * cm),
-            Paragraph(_anredetext(mieter), styles["Normal"]),
+            Paragraph(_get_anredetext(mieter), styles["Normal"]),
             Spacer(1, 0.3 * cm),
             Paragraph(
                 f"anbei erhalten Sie die Abrechnung der Nebenkosten für Ihre Mieteinheit "
@@ -88,7 +88,7 @@ def exportiere_abrechnung(
             Spacer(1, 0.6 * cm),
         ]
 
-        details = positionsdetails(abrechnung, vertrag)
+        details = get_positionsdetails(abrechnung, vertrag)
         tabellen_daten = [["Kostenart", "Anteil"]]
         tabellen_daten += [[kostenart, f"{betrag:,.2f} €"] for kostenart, betrag in details]
         tabellen_daten.append(["Gesamtkostenanteil", f"{float(position.anteil_kosten):,.2f} €"])
@@ -96,7 +96,7 @@ def exportiere_abrechnung(
             ["Geleistete Vorauszahlung", f"{float(position.geleistete_vorauszahlung):,.2f} €"]
         )
         saldo = float(position.saldo)
-        saldo_text = "Nachzahlung" if saldo > 0 else "Guthaben"
+        saldo_text = "Nachzahlung" if saldo > 0 else "Rückerstattung" if saldo < 0 else "Saldo"
         tabellen_daten.append([saldo_text, f"{abs(saldo):,.2f} €"])
 
         tabelle = Table(tabellen_daten, colWidths=[10 * cm, 5 * cm])
@@ -124,11 +124,11 @@ def exportiere_abrechnung(
             )
         elif saldo < 0:
             schlusstext = (
-                f"Es ergibt sich ein Guthaben in Höhe von {abs(saldo):,.2f} €, das mit der nächsten "
+                f"Es ergibt sich eine Rückerstattung in Höhe von {abs(saldo):,.2f} €, das mit der nächsten "
                 f"Mietzahlung verrechnet wird."
             )
         else:
-            schlusstext = "Es ergibt sich weder eine Nachzahlung noch ein Guthaben."
+            schlusstext = "Es ergibt sich weder eine Nachzahlung noch eine Rückerstattung."
         elemente.append(Paragraph(schlusstext, styles["Normal"]))
         elemente.append(Spacer(1, 1 * cm))
 

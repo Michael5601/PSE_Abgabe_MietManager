@@ -1,14 +1,13 @@
 """Zentrale Geschäftsregeln (siehe Spezifikationsdokument, Abschnitt 3).
 
-Diese Funktionen kennen kein Qt und keine Datenbank-Session-Details -- sie prüfen ausschließlich
-die übergebenen Objekte bzw. Werte. Damit gelten die Regeln unabhängig davon, über welchen Weg
-(GUI, Skript, Test) eine Änderung vorgenommen wird, und lassen sich isoliert testen.
+Diese Funktionen kennen kein Qt und keine Datenbank-Session-Details. Sie prüfen ausschließlich
+die übergebenen Werte. Damit lassen sich die Regeln isoliert testen.
 """
 
 from datetime import date as date_type
 from typing import Iterable
 
-FERNE_ZUKUNFT = date_type(9999, 12, 31)
+MAX_DATE = date_type(9999, 12, 31)
 
 
 class GeschaeftsregelFehler(Exception):
@@ -16,14 +15,14 @@ class GeschaeftsregelFehler(Exception):
 
 
 def pruefe_vertragszeitraum(beginn: date_type, ende: date_type | None) -> None:
-    """Regel: Das Startdatum eines Mietvertrags muss vor dessen Enddatum liegen (falls gesetzt)."""
+    """Regel: Das Startdatum eines Mietvertrags muss vor dessen Enddatum liegen, falls gesetzt."""
     if ende is not None and beginn >= ende:
         raise GeschaeftsregelFehler("Das Startdatum muss vor dem Enddatum liegen.")
 
 
 def _ueberschneidet(beginn_a: date_type, ende_a, beginn_b: date_type, ende_b) -> bool:
-    ende_a = ende_a or FERNE_ZUKUNFT
-    ende_b = ende_b or FERNE_ZUKUNFT
+    ende_a = ende_a or MAX_DATE
+    ende_b = ende_b or MAX_DATE
     return beginn_a <= ende_b and beginn_b <= ende_a
 
 
@@ -31,7 +30,7 @@ def pruefe_keine_ueberlappung(
     bestehende_vertraege: Iterable, beginn: date_type, ende, ausgenommen_vertrag_id: int | None = None
 ) -> None:
     """Regel: Eine Mieteinheit darf im selben Zeitraum nicht durch mehr als einen Mietvertrag
-    belegt sein (keine zeitliche Überlappung aktiver Verträge derselben Mieteinheit)."""
+    belegt sein."""
     for vertrag in bestehende_vertraege:
         if ausgenommen_vertrag_id is not None and vertrag.id == ausgenommen_vertrag_id:
             continue
