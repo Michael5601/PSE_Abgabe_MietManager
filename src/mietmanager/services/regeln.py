@@ -71,7 +71,7 @@ def pruefe_mieter_loeschbar(mieter) -> None:
 def pruefe_profil_vollstaendig(profil) -> None:
     """Regel: Für den PDF-Export müssen im Vermieterprofil mindestens Name, Straße, PLZ und Ort
     hinterlegt sein."""
-    if not profil.ist_vollstaendig():
+    if not profil.is_complete():
         raise GeschaeftsregelFehler(
             "Das Vermieterprofil ist unvollständig (Name, Straße, PLZ und Ort werden für den "
             "Briefkopf benötigt)."
