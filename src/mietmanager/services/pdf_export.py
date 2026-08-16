@@ -124,7 +124,7 @@ def exportiere_abrechnung(
             )
         elif saldo < 0:
             schlusstext = (
-                f"Es ergibt sich eine Rückerstattung in Höhe von {abs(saldo):,.2f} €, das mit der nächsten "
+                f"Es ergibt sich eine Rückerstattung in Höhe von {abs(saldo):,.2f} €, die mit der nächsten "
                 f"Mietzahlung verrechnet wird."
             )
         else:

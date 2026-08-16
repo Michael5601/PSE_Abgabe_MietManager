@@ -86,6 +86,11 @@ class AbrechnungTab(QWidget):
         for immobilie in self.session.scalars(select(Immobilie)).all():
             self.immobilie_combo.addItem(immobilie.bezeichnung, userData=immobilie.id)
 
+    def refresh(self) -> None:
+        """Lädt die Immobilien-Auswahl neu, z.B. wenn in einem anderen Tab eine Immobilie angelegt
+        wurde. Ein bereits berechnetes Abrechnungsergebnis bleibt dabei bewusst erhalten."""
+        self._lade_immobilien()
+
     def erstelle_abrechnung(self) -> None:
         immobilie_id = self.immobilie_combo.currentData()
         if immobilie_id is None:

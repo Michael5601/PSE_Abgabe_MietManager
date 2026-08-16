@@ -38,8 +38,6 @@ class ImmobilienTab(QWidget):
         loeschen_btn = QPushButton("🗑 Löschen")
         loeschen_btn.setObjectName("dangerButton")
         loeschen_btn.clicked.connect(self._loeschen)
-        refresh_btn = QPushButton("⟳ Aktualisieren")
-        refresh_btn.clicked.connect(self.refresh)
 
         btn_row = QHBoxLayout()
         btn_row.addWidget(neue_immobilie_btn)
@@ -47,7 +45,6 @@ class ImmobilienTab(QWidget):
         btn_row.addWidget(bearbeiten_btn)
         btn_row.addWidget(loeschen_btn)
         btn_row.addStretch()
-        btn_row.addWidget(refresh_btn)
 
         layout = QVBoxLayout()
         layout.addLayout(btn_row)

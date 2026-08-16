@@ -1,11 +1,9 @@
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QFrame,
     QGraphicsDropShadowEffect,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -64,12 +62,8 @@ class DashboardTab(QWidget):
         ):
             cards_row.addWidget(card)
 
-        refresh_btn = QPushButton("⟳ Aktualisieren")
-        refresh_btn.clicked.connect(self.refresh)
-
         layout = QVBoxLayout()
         layout.addLayout(cards_row)
-        layout.addWidget(refresh_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         layout.addStretch()
         self.setLayout(layout)
 

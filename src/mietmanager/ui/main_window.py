@@ -38,6 +38,10 @@ class MainWindow(QMainWindow):
         tabs.addTab(VertraegeTab(self.session), "Mietverträge")
         tabs.addTab(KostenTab(self.session), "Kostenpositionen")
         tabs.addTab(AbrechnungTab(self.session), "Nebenkostenabrechnung")
+        # Jeder Tab hält seine Daten nur als Snapshot. Änderungen in anderen Tabs (z.B. ein neuer
+        # Mietvertrag) würden sonst erst nach manuellem Klick auf einen Aktualisieren-Button sichtbar.
+        # Stattdessen wird beim Tabwechsel automatisch neu geladen.
+        tabs.currentChanged.connect(lambda index: tabs.widget(index).refresh())
 
         container = QWidget()
         container_layout = QVBoxLayout()
