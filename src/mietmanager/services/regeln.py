@@ -68,6 +68,17 @@ def pruefe_mieter_loeschbar(mieter) -> None:
         )
 
 
+def pruefe_mietvertrag_loeschbar(mietvertrag) -> None:
+    """Regel: Ein Mietvertrag kann nur gelöscht werden, wenn ihm keine Abrechnungsposition mehr
+    zugeordnet ist, da sonst die NOT-NULL-Fremdschlüsselspalte auf Abrechnungsposition verletzt
+    würde."""
+    if mietvertrag.abrechnungspositionen:
+        raise GeschaeftsregelFehler(
+            "Dieser Mietvertrag ist bereits Teil einer Nebenkostenabrechnung und kann nicht "
+            "gelöscht werden."
+        )
+
+
 def pruefe_profil_vollstaendig(profil) -> None:
     """Regel: Für den PDF-Export müssen im Vermieterprofil mindestens Name, Straße, PLZ und Ort
     hinterlegt sein."""

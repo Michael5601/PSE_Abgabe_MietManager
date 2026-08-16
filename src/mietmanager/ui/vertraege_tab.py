@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from mietmanager.models import Mietvertrag
+from mietmanager.services import GeschaeftsregelFehler, pruefe_mietvertrag_loeschbar
 from mietmanager.ui.mietvertrag_dialog import MietvertragDialog
 
 COLUMNS = [
@@ -114,6 +115,11 @@ class VertraegeTab(QWidget):
         vertrag = self._selected()
         if vertrag is None:
             QMessageBox.information(self, "Keine Auswahl", "Bitte zuerst einen Mietvertrag auswählen.")
+            return
+        try:
+            pruefe_mietvertrag_loeschbar(vertrag)
+        except GeschaeftsregelFehler as fehler:
+            QMessageBox.warning(self, "Löschen nicht möglich", str(fehler))
             return
         frage = f"Mietvertrag von {vertrag.mieter.name} für {vertrag.mieteinheit.bezeichnung} wirklich löschen?"
         if QMessageBox.question(self, "Löschen", frage) == QMessageBox.StandardButton.Yes:

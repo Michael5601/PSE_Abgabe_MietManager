@@ -4,13 +4,14 @@ from datetime import date
 
 import pytest
 
-from mietmanager.models import Immobilie, Mieteinheit, Mieter, Mietvertrag, Vermieterprofil
+from mietmanager.models import Abrechnungsposition, Immobilie, Mieteinheit, Mieter, Mietvertrag, Vermieterprofil
 from mietmanager.services import (
     GeschaeftsregelFehler,
     pruefe_immobilie_loeschbar,
     pruefe_keine_ueberlappung,
     pruefe_mieteinheit_loeschbar,
     pruefe_mieter_loeschbar,
+    pruefe_mietvertrag_loeschbar,
     pruefe_profil_vollstaendig,
     pruefe_vertragszeitraum,
 )
@@ -112,6 +113,20 @@ def test_mieter_mit_vertrag_ist_nicht_loeschbar() -> None:
     _vertrag(_mieteinheit(), mieter, date(2024, 1, 1), None)
     with pytest.raises(GeschaeftsregelFehler):
         pruefe_mieter_loeschbar(mieter)
+
+
+def test_mietvertrag_ohne_abrechnungsposition_ist_loeschbar() -> None:
+    vertrag = _vertrag(_mieteinheit(), _mieter(), date(2024, 1, 1), None)
+    pruefe_mietvertrag_loeschbar(vertrag)
+
+
+def test_mietvertrag_mit_abrechnungsposition_ist_nicht_loeschbar() -> None:
+    vertrag = _vertrag(_mieteinheit(), _mieter(), date(2024, 1, 1), None)
+    Abrechnungsposition(
+        mietvertrag=vertrag, anteil_kosten=100, geleistete_vorauszahlung=100, saldo=0
+    )
+    with pytest.raises(GeschaeftsregelFehler):
+        pruefe_mietvertrag_loeschbar(vertrag)
 
 
 def test_vollstaendiges_profil_wird_akzeptiert() -> None:
