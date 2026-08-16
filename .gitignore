@@ -5,8 +5,12 @@ __pycache__/
 
 # Distribution / packaging
 build/
-dist/
 *.egg-info/
+
+# dist/ enthält PyInstaller-Build-Artefakte; die fertige exe wird für die Abgabe
+# bewusst mit ins Repo aufgenommen, alles andere darin bleibt ignoriert.
+dist/*
+!dist/MietManager.exe
 
 # PyInstaller
 *.manifest
@@ -23,3 +27,5 @@ htmlcov/
 
 # VS Code
 tempCodeRunnerFile.py
+
+/docs
