@@ -80,6 +80,8 @@ class ImmobilienTab(QWidget):
                 top.addChild(child)
             self.tree.addTopLevelItem(top)
         self.tree.expandAll()
+        for spalte in range(self.tree.columnCount()):
+            self.tree.resizeColumnToContents(spalte)
 
     def _selected_entity(self):
         items = self.tree.selectedItems()
