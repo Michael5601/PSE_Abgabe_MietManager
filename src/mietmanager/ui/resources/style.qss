@@ -111,6 +111,14 @@ QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QSpinBox:focus, QDoubleSpinBo
     border: 1px solid #2E5AAC;
 }
 
+/* Deutlich sichtbarer "gesperrt"-Zustand, z.B. für das Ende-Datum bei unbefristeten Mietverträgen:
+   ohne diese Regel sieht ein deaktiviertes Feld optisch kaum anders aus als ein normales. */
+QLineEdit:disabled, QComboBox:disabled, QDateEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
+    background-color: #EDEFF2;
+    border: 1px solid #E4E7EB;
+    color: #A7AEB8;
+}
+
 QComboBox::drop-down {
     border: none;
     width: 20px;

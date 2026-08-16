@@ -1,4 +1,7 @@
+from datetime import date
+
 from PyQt6.QtWidgets import (
+    QAbstractSpinBox,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -24,7 +27,15 @@ class ImmobilieDialog(QDialog):
         self.baujahr_spin = QSpinBox()
         self.baujahr_spin.setRange(0, 2100)
         self.baujahr_spin.setSpecialValueText("unbekannt")
-        self.baujahr_spin.setValue(immobilie.baujahr if immobilie and immobilie.baujahr else 0)
+        self.baujahr_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        if immobilie is not None:
+            # Beim Bearbeiten den tatsächlich gespeicherten Wert zeigen (ggf. "unbekannt").
+            self.baujahr_spin.setValue(immobilie.baujahr or 0)
+        else:
+            # Beim Neuanlegen mit dem aktuellen Jahr statt 0 starten, da sonst jeder Klick auf die
+            # Pfeil-Buttons das Baujahr nur um 1 verändert und man von "unbekannt" aus Hunderte Klicks
+            # bräuchte, um ein realistisches Baujahr zu erreichen.
+            self.baujahr_spin.setValue(date.today().year)
 
         form = QFormLayout()
         form.addRow("Bezeichnung:", self.bezeichnung_edit)

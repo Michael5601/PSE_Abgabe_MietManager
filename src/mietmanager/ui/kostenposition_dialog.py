@@ -2,6 +2,7 @@ from datetime import date as date_type
 
 from PyQt6.QtCore import QDate
 from PyQt6.QtWidgets import (
+    QAbstractSpinBox,
     QComboBox,
     QDateEdit,
     QDialog,
@@ -48,6 +49,7 @@ class KostenpositionDialog(QDialog):
         self.betrag_spin = QDoubleSpinBox()
         self.betrag_spin.setRange(0, 1_000_000)
         self.betrag_spin.setSuffix(" €")
+        self.betrag_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.betrag_spin.setValue(float(kostenposition.betrag) if kostenposition else 100.0)
 
         heute = QDate.currentDate()

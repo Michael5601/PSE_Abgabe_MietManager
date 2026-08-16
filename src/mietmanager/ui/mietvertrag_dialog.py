@@ -2,6 +2,7 @@ from datetime import date as date_type
 
 from PyQt6.QtCore import QDate
 from PyQt6.QtWidgets import (
+    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QDateEdit,
@@ -55,20 +56,24 @@ class MietvertragDialog(QDialog):
         self.kaltmiete_spin = QDoubleSpinBox()
         self.kaltmiete_spin.setRange(0, 100_000)
         self.kaltmiete_spin.setSuffix(" €")
+        self.kaltmiete_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.kaltmiete_spin.setValue(float(mietvertrag.kaltmiete) if mietvertrag else 500.0)
 
         self.nk_spin = QDoubleSpinBox()
         self.nk_spin.setRange(0, 100_000)
         self.nk_spin.setSuffix(" €")
+        self.nk_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.nk_spin.setValue(float(mietvertrag.nebenkosten_vorauszahlung) if mietvertrag else 150.0)
 
         self.kaution_spin = QDoubleSpinBox()
         self.kaution_spin.setRange(0, 1_000_000)
         self.kaution_spin.setSuffix(" €")
+        self.kaution_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.kaution_spin.setValue(float(mietvertrag.kaution) if mietvertrag else 1500.0)
 
         self.personen_spin = QSpinBox()
         self.personen_spin.setRange(1, 20)
+        self.personen_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.personen_spin.setValue(mietvertrag.personenzahl if mietvertrag else 1)
 
         if mietvertrag:

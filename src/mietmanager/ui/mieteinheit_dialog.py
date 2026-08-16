@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import (
+    QAbstractSpinBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -22,11 +23,13 @@ class MieteinheitDialog(QDialog):
         self.flaeche_spin = QDoubleSpinBox()
         self.flaeche_spin.setRange(1, 9999)
         self.flaeche_spin.setSuffix(" qm")
+        self.flaeche_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.flaeche_spin.setValue(float(mieteinheit.flaeche_qm) if mieteinheit else 50.0)
 
         self.zimmer_spin = QDoubleSpinBox()
         self.zimmer_spin.setRange(0.5, 20)
         self.zimmer_spin.setSingleStep(0.5)
+        self.zimmer_spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.zimmer_spin.setValue(float(mieteinheit.zimmeranzahl) if mieteinheit else 2.0)
 
         form = QFormLayout()
