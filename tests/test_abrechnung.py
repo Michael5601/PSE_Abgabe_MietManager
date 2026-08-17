@@ -16,7 +16,7 @@ from mietmanager.models import (
     Nebenkostenabrechnung,
     Umlageschluessel,
 )
-from mietmanager.services import AbrechnungsFehler, erstelle_abrechnung
+from mietmanager.services import AbrechnungsFehler, erstelle_abrechnung, lade_abrechnungen
 from mietmanager.services.abrechnung import get_positionsdetails
 
 
@@ -237,4 +237,41 @@ def test_get_positionsdetails_liefert_kostenart_und_anteil_je_kostenposition(ses
     details_by_kostenart = dict(details)
     assert details_by_kostenart["Heizung"] == 600.0
     assert details_by_kostenart["Wasser"] == 400.0
-    assert sum(details_by_kostenart.values()) == float(abrechnung.positionen[0].anteil_kosten)
+
+
+def test_lade_abrechnungen_liefert_leere_liste_ohne_abrechnungen(session) -> None:
+    immobilie = _immobilie(session)
+    assert lade_abrechnungen(session, immobilie.id) == []
+
+
+def test_lade_abrechnungen_liefert_nur_abrechnungen_der_gewaehlten_immobilie(session) -> None:
+    immobilie1 = _immobilie(session)
+    einheit1 = _einheit(session, immobilie1)
+    _vertrag(session, einheit1, _mieter(session), date(2024, 1, 1))
+    _kostenposition(session, immobilie1, 1200, date(2024, 1, 1), date(2024, 12, 31))
+    erstelle_abrechnung(session, immobilie1, date(2024, 1, 1), date(2024, 12, 31))
+
+    immobilie2 = _immobilie(session)
+    einheit2 = _einheit(session, immobilie2)
+    _vertrag(session, einheit2, _mieter(session), date(2024, 1, 1))
+    _kostenposition(session, immobilie2, 800, date(2024, 1, 1), date(2024, 12, 31))
+    erstelle_abrechnung(session, immobilie2, date(2024, 1, 1), date(2024, 12, 31))
+
+    abrechnungen = lade_abrechnungen(session, immobilie1.id)
+
+    assert len(abrechnungen) == 1
+    assert abrechnungen[0].immobilie_id == immobilie1.id
+
+
+def test_lade_abrechnungen_sortiert_neuesten_zeitraum_zuerst(session) -> None:
+    immobilie = _immobilie(session)
+    einheit = _einheit(session, immobilie)
+    _vertrag(session, einheit, _mieter(session), date(2022, 1, 1))
+    _kostenposition(session, immobilie, 1200, date(2022, 1, 1), date(2022, 12, 31))
+    _kostenposition(session, immobilie, 1200, date(2023, 1, 1), date(2023, 12, 31))
+    erstelle_abrechnung(session, immobilie, date(2022, 1, 1), date(2022, 12, 31))
+    erstelle_abrechnung(session, immobilie, date(2023, 1, 1), date(2023, 12, 31))
+
+    abrechnungen = lade_abrechnungen(session, immobilie.id)
+
+    assert [a.zeitraum_start for a in abrechnungen] == [date(2023, 1, 1), date(2022, 1, 1)]

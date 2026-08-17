@@ -1,4 +1,9 @@
-from mietmanager.services.abrechnung import AbrechnungsFehler, erstelle_abrechnung, get_positionsdetails
+from mietmanager.services.abrechnung import (
+    AbrechnungsFehler,
+    erstelle_abrechnung,
+    get_positionsdetails,
+    lade_abrechnungen,
+)
 from mietmanager.services.pdf_export import exportiere_abrechnung
 from mietmanager.services.regeln import (
     GeschaeftsregelFehler,
@@ -15,6 +20,7 @@ __all__ = [
     "AbrechnungsFehler",
     "erstelle_abrechnung",
     "get_positionsdetails",
+    "lade_abrechnungen",
     "exportiere_abrechnung",
     "GeschaeftsregelFehler",
     "pruefe_immobilie_loeschbar",

@@ -8,6 +8,7 @@ Vorauszahlung anteilig pro Monat der tatsächlichen Mietdauer berechnet werden.
 
 from datetime import date
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from mietmanager.models import (
@@ -95,6 +96,17 @@ def erstelle_abrechnung(
     session.add(abrechnung)
     session.commit()
     return abrechnung
+
+
+def lade_abrechnungen(session: Session, immobilie_id: int) -> list[Nebenkostenabrechnung]:
+    """Liefert alle Nebenkostenabrechnungen einer Immobilie, neuester Abrechnungszeitraum zuerst."""
+    return list(
+        session.scalars(
+            select(Nebenkostenabrechnung)
+            .where(Nebenkostenabrechnung.immobilie_id == immobilie_id)
+            .order_by(Nebenkostenabrechnung.zeitraum_start.desc())
+        ).all()
+    )
 
 
 def get_positionsdetails(

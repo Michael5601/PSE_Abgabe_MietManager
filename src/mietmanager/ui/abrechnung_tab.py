@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from PyQt6.QtCore import QDate
+from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -27,10 +27,12 @@ from mietmanager.services import (
     GeschaeftsregelFehler,
     erstelle_abrechnung,
     exportiere_abrechnung,
+    lade_abrechnungen,
     pruefe_profil_vollstaendig,
 )
 
 RESULT_COLUMNS = ["Mieter", "Kostenanteil", "Vorauszahlung", "Saldo"]
+VERLAUF_COLUMNS = ["Zeitraum", "Erstellt am"]
 
 
 class AbrechnungTab(QWidget):
@@ -41,6 +43,7 @@ class AbrechnungTab(QWidget):
 
         self.immobilie_combo = QComboBox()
         self._lade_immobilien()
+        self.immobilie_combo.currentIndexChanged.connect(self._lade_verlauf)
 
         today = QDate.currentDate()
         self.start_edit = QDateEdit(QDate(today.year(), 1, 1))
@@ -74,22 +77,84 @@ class AbrechnungTab(QWidget):
         btn_row.addWidget(self.export_btn)
         btn_row.addStretch()
 
+        verlauf_label = QLabel("<b>Bisherige Abrechnungen dieser Immobilie</b>")
+
+        self.verlauf_table = QTableWidget()
+        self.verlauf_table.setColumnCount(len(VERLAUF_COLUMNS))
+        self.verlauf_table.setHorizontalHeaderLabels(VERLAUF_COLUMNS)
+        self.verlauf_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.verlauf_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+
+        verlauf_loeschen_btn = QPushButton("🗑 Abrechnung löschen")
+        verlauf_loeschen_btn.setObjectName("dangerButton")
+        verlauf_loeschen_btn.clicked.connect(self._loesche_abrechnung)
+
         layout = QVBoxLayout()
         layout.addLayout(form)
         layout.addLayout(btn_row)
         layout.addWidget(self.status_label)
         layout.addWidget(self.result_table)
+        layout.addWidget(verlauf_label)
+        layout.addWidget(self.verlauf_table)
+        layout.addWidget(verlauf_loeschen_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         self.setLayout(layout)
+
+        self._lade_verlauf()
 
     def _lade_immobilien(self) -> None:
         self.immobilie_combo.clear()
         for immobilie in self.session.scalars(select(Immobilie)).all():
             self.immobilie_combo.addItem(immobilie.bezeichnung, userData=immobilie.id)
 
+    def _lade_verlauf(self) -> None:
+        self.verlauf_table.setRowCount(0)
+        immobilie_id = self.immobilie_combo.currentData()
+        if immobilie_id is None:
+            return
+        abrechnungen = lade_abrechnungen(self.session, immobilie_id)
+        self.verlauf_table.setRowCount(len(abrechnungen))
+        for row, abrechnung in enumerate(abrechnungen):
+            zeitraum = f"{abrechnung.zeitraum_start.isoformat()} – {abrechnung.zeitraum_ende.isoformat()}"
+            erstellt_am = abrechnung.erstellt_am.strftime("%d.%m.%Y %H:%M")
+            zeitraum_item = QTableWidgetItem(zeitraum)
+            zeitraum_item.setData(Qt.ItemDataRole.UserRole, abrechnung.id)
+            self.verlauf_table.setItem(row, 0, zeitraum_item)
+            self.verlauf_table.setItem(row, 1, QTableWidgetItem(erstellt_am))
+        self.verlauf_table.resizeColumnsToContents()
+
+    def _loesche_abrechnung(self) -> None:
+        row = self.verlauf_table.currentRow()
+        if row < 0:
+            QMessageBox.information(
+                self, "Keine Auswahl", "Bitte zuerst eine Abrechnung im Verlauf auswählen."
+            )
+            return
+        abrechnung_id = self.verlauf_table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        abrechnung = self.session.get(Nebenkostenabrechnung, abrechnung_id)
+        if abrechnung is None:
+            return
+
+        zeitraum = f"{abrechnung.zeitraum_start.isoformat()} – {abrechnung.zeitraum_ende.isoformat()}"
+        frage = f"Abrechnung für den Zeitraum {zeitraum} wirklich löschen?"
+        if QMessageBox.question(self, "Abrechnung löschen", frage) != QMessageBox.StandardButton.Yes:
+            return
+
+        if self.aktuelle_abrechnung is not None and self.aktuelle_abrechnung.id == abrechnung.id:
+            self.aktuelle_abrechnung = None
+            self.export_btn.setEnabled(False)
+            self.result_table.setRowCount(0)
+            self.status_label.clear()
+
+        self.session.delete(abrechnung)
+        self.session.commit()
+        self._lade_verlauf()
+
     def refresh(self) -> None:
-        """Lädt die Immobilien-Auswahl neu, z.B. wenn in einem anderen Tab eine Immobilie angelegt
-        wurde. Ein bereits berechnetes Abrechnungsergebnis bleibt dabei bewusst erhalten."""
+        """Lädt die Immobilien-Auswahl und den Abrechnungsverlauf neu, z.B. wenn in einem anderen
+        Tab eine Immobilie angelegt wurde. Ein bereits berechnetes Abrechnungsergebnis bleibt dabei
+        bewusst erhalten."""
         self._lade_immobilien()
+        self._lade_verlauf()
 
     def erstelle_abrechnung(self) -> None:
         immobilie_id = self.immobilie_combo.currentData()
@@ -122,6 +187,7 @@ class AbrechnungTab(QWidget):
             for col, value in enumerate(values):
                 self.result_table.setItem(row, col, QTableWidgetItem(value))
         self.result_table.resizeColumnsToContents()
+        self._lade_verlauf()
 
     def _exportiere_pdf(self) -> None:
         if self.aktuelle_abrechnung is None:
