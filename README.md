@@ -15,22 +15,9 @@ src/mietmanager/        Quellcode der Anwendung
   ui/                   PyQt6-GUI (Fenster, Tabs, Dialoge)
   data/                 Datenzugriff, Testdaten-Seed
 tests/                  Unit-Tests
-```
-
-## Setup & Ausführung
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[dev]"
-mietmanager
-```
-
-Das Projekt ist als installierbares Python-Modul (`pyproject.toml`, setuptools-Backend) aufgesetzt.
-`pip install -e ".[dev]"` installiert die Anwendung im editierbaren Modus inkl. Test-/Build-Abhängigkeiten
-und registriert den Kommandozeilenbefehl `mietmanager` (GUI-Entry-Point, siehe `[project.gui-scripts]`).
-Für die finale Auslieferung wird zusätzlich eine eigenständige Windows-.exe per PyInstaller gebaut, damit die Anwendung auch ohne manuelle `pip`-Installation lauffähig ist.
-
-## Tests
-```bash
-pytest
+scripts/                Performance-Benchmark (siehe Testdokument)
+docs/                   Projektdokumentation, Anforderungsdokument, Spezifikationsdokument,
+                         Architekturdokument, Testdokument und Abstract als PDF
+abgabe/                 Abgabe-PDFs aus Phase 1 und Phase 2 sowie Abstract und Finales Produkt
+                         aus Phase 3
 ```
